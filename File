@@ -1,0 +1,22 @@
+Get file names from folder 
+
+const fs = require('fs');
+const path = require('path');
+
+const folderPath = './beverages';
+
+fs.readdir(folderPath, (err, files) => {
+    if (err) {
+        console.error('Error reading directory:', err);
+        return;
+    }
+
+    files = files.filter(file => fs.statSync(path.join(folderPath, file)).isFile());
+    const dataList = [];
+    files.forEach(file => {
+        const filename = file;
+        const name = filename.split('.')[0];
+        dataList.push({ img: `${file}`, name: `${name}` });
+    });
+
+});
