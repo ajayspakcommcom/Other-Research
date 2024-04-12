@@ -1,0 +1,21 @@
+npm install pdfkit
+==========================================
+
+const fs = require('fs');
+const PDFDocument = require('pdfkit');
+
+const doc = new PDFDocument();
+
+const writeStream = fs.createWriteStream('demo.pdf');
+doc.pipe(writeStream);
+
+const textContent = `Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book`;
+
+doc.fontSize(30).fillColor('red').text('Hello, World!', 10, 15);
+doc.fontSize(14).fillColor('black').text(textContent, 10, 50);
+
+doc.end();
+
+console.log('PDF generated successfully.');
+
+============================================
