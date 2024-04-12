@@ -1,0 +1,26 @@
+const fs = require('fs');
+const path = require('path');
+
+// Function to write log messages to a file
+function writeLog(message) {
+
+    const logFilePath = path.join(__dirname, 'app.log'); // Path to the log file
+
+    // Create a timestamp for the log message
+    const timestamp = new Date().toISOString();
+
+    // Format the log message
+    const formattedMessage = `${timestamp}: ${message}\n`;
+
+    // Append the message to the log file
+    fs.appendFile(logFilePath, formattedMessage, (err) => {
+        if (err) {
+            console.error('Error writing to log file:', err);
+        } else {
+            console.log('Log message written to file:', message);
+        }
+    });
+}
+
+// Usage example
+writeLog('This is a log message.');
