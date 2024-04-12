@@ -1,0 +1,60 @@
+import nodemailer from 'nodemailer';
+import path from 'path';
+
+interface EmailData {
+    recipient: string;
+    subject: string;
+    text: string;
+}
+
+const sendEmail = async ({ recipient, subject, text }: EmailData): Promise<boolean> => {
+    const transporter = nodemailer.createTransport({
+        service: 'gmail',
+        auth: {
+            user: 'contactastaracademic@gmail.com',
+            pass: 'thbnzzqfdqlewhyj',
+        },
+    });
+
+    const mailOptions = {
+        from: 'contactastaracademic@gmail.com',
+        to: recipient,
+        subject: subject,
+        html: `${text}`,
+        // attachments: [{
+        //     //filename: 'dummy.pdf',
+        //     //path: path.resolve(__dirname, 'dummy.pdf')
+        // }]
+    };
+
+    try {
+        const info = await transporter.sendMail(mailOptions);
+        console.log('Email sent: ' + info.response);
+        return true; // Email sent successfully
+    } catch (error) {
+        console.error('Error sending email:', error);
+        return false; // Email sending failed
+    }
+};
+
+export { sendEmail };
+
+
+=====================================================================================
+
+
+const htmlContent = `<div>
+                                  <b>Dear ${req.body.FirstName},</b>
+                                  <div style="padding:5px 15px;"></div>
+                                  <p>Thank you for reaching out to us.</p>
+                                  <p>We will get in touch soon.</p>
+                                  <div style="padding:15px 15px;"></div>
+                                  <div style="display:inline-block; padding:15px 0;">
+                                      <img src="https://astaracademy.in/img/logo.png" alt="Image" style="width:200px; height:auto;">
+                                  </div>
+                                </div>
+                              `;
+
+const emailSent = await sendEmail({ recipient: 'sunil@spakcomm.com', subject: 'Testing Purpose...', text: htmlContent });
+
+
