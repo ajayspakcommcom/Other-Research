@@ -1,0 +1,34 @@
+npm install exceljs
+
+==============================================
+
+const fs = require('fs');
+const Excel = require('exceljs');
+
+async function generateExcel() {
+    const workbook = new Excel.Workbook();
+
+    // Add Sheet1
+    const sheet1 = workbook.addWorksheet('Sheet1');
+    sheet1.addRow(['Name', 'Age', 'Country']);
+    sheet1.addRow(['John Doe', 30, 'USA']);
+    sheet1.addRow(['Jane Smith', 25, 'Canada']);
+    sheet1.addRow(['Alice Johnson', 35, 'UK']);
+
+    // Add Sheet2
+    const sheet2 = workbook.addWorksheet('Sheet2');
+    sheet2.addRow(['ID', 'City', 'Population']);
+    sheet2.addRow([1, 'New York', 8175133]);
+    sheet2.addRow([2, 'Los Angeles', 3792621]);
+    sheet2.addRow([3, 'Chicago', 2695598]);
+
+    try {
+        await workbook.xlsx.writeFile('example.xlsx');
+        console.log('Excel file generated successfully.');
+    } catch (error) {
+        console.error('Error generating Excel file:', error);
+    }
+}
+
+generateExcel();
+
