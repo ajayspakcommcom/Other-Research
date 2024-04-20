@@ -1,0 +1,14 @@
+function countHolidaysExcludingSundays(startDate, endDate) {
+  let start = new Date(startDate);
+  let end = new Date(endDate);
+  let holidayCount = 0;
+
+  while (start <= end) {
+    if (start.getDay() !== 0) { // If it's not Sunday
+      holidayCount++;
+    }
+    start.setDate(start.getDate() + 1); // Move to next day
+  }
+
+  return holidayCount;
+}
