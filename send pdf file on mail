@@ -1,0 +1,35 @@
+npm install nodemailer
+
+=============================================================================
+
+const fs = require('fs');
+const nodemailer = require('nodemailer');
+
+// Email configuration
+const transporter = nodemailer.createTransport({
+    service: 'gmail', // e.g., 'gmail', 'outlook', etc.
+    auth: {
+        user: 'ajay@spakcomm.com',
+        pass: '**********',
+    },
+});
+
+const mailOptions = {
+    from: 'ajay@spakcomm.com',
+    to: 'ajay@spakcomm.com',
+    subject: 'PDF file attachment',
+    text: 'Please find the attached PDF file.',
+    attachments: [{
+        filename: 'test.pdf', // Name of the attached file
+        content: fs.createReadStream('test.pdf'), // Read the PDF file
+    }],
+};
+
+// Send email
+transporter.sendMail(mailOptions, (error, info) => {
+    if (error) {
+        console.error('Error sending email:', error);
+    } else {
+        console.log('Email sent:', info.response);
+    }
+});

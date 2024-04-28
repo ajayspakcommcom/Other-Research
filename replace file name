@@ -1,0 +1,32 @@
+const fs = require('fs');
+const path = require('path');
+
+const folderPath = './gallery';
+
+fs.readdir(folderPath, (err, files) => {
+
+    if (err) {
+        console.error('Error reading directory:', err);
+        return;
+    }
+
+    files.forEach(file => {
+
+        const oldFilePath = path.join(folderPath, file);
+        const filename = file;
+        const name = filename.split('.')[0];
+
+        let updatedName = name.replace(/ /g, "-");
+
+        const newFilename = updatedName + path.extname(filename);
+        const newFilePath = path.join(folderPath, newFilename);
+
+        fs.rename(oldFilePath, newFilePath, (err) => {
+            if (err) {
+                console.error(`Error renaming file ${filename}:`, err);
+                return;
+            }
+            console.log(`File ${filename} renamed to ${newFilename}`);
+        });
+    });
+});

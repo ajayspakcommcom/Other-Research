@@ -1,0 +1,37 @@
+const fs = require('fs');
+const path = require('path');
+
+function deleteFilesInDirectory(directory) {
+    fs.readdir(directory, (err, files) => {
+        if (err) {
+            console.error(`Error reading directory ${directory}: ${err}`);
+            return;
+        }
+        files.forEach(file => {
+            const filePath = path.join(directory, file);
+            fs.stat(filePath, (err, stat) => {
+                if (err) {
+                    console.error(`Error checking file ${filePath}: ${err}`);
+                    return;
+                }
+                if (stat.isDirectory()) {
+                    // If it's a directory, recursively call deleteFilesInDirectory
+                    deleteFilesInDirectory(filePath);
+                } else {
+                    // If it's a file, delete it
+                    fs.unlink(filePath, err => {
+                        if (err) {
+                            console.error(`Error deleting file ${filePath}: ${err}`);
+                        } else {
+                            console.log(`Deleted file: ${filePath}`);
+                        }
+                    });
+                }
+            });
+        });
+    });
+}
+
+// Usage example:
+const directoryPath = './gallery';
+deleteFilesInDirectory(directoryPath);
