@@ -31,3 +31,7 @@ if new registered user
   6) at the bottom you will get app password click on that 
   7) type name of your application then generate 16 characters password 
   8) replace the password with this new generated pass in your code 
+
+if after 2-Step Verification is on still App Password not showin then 
+type this url 
+https://myaccount.google.com/apppasswords
