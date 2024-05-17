@@ -58,3 +58,19 @@ const htmlContent = `<div>
 const emailSent = await sendEmail({ recipient: 'sunil@spakcomm.com', subject: 'Testing Purpose...', text: htmlContent });
 
 
+to less secure app 
+if new registered user 
+  1) login to gmail
+  2) click on registered user logo icon right side of the browser
+  3) manage your account setting => security section 
+  4) click on 2 steps verification then verify the account 
+  5) after verification again click on the on 2 steps put the password 
+  6) at the bottom you will get app password click on that 
+  7) type name of your application then generate 16 characters password 
+  8) replace the password with this new generated pass in your code
+
+
+if after 2-Step Verification is on still App Password not showin then 
+type this url 
+https://myaccount.google.com/apppasswords
+
