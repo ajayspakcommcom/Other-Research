@@ -1,0 +1,86 @@
+🔑 Key Terraform Features in Real-World Node.js Projects (MNC Use Cases)
+  
+  1. Infrastructure as Code (IaC)
+      Entire infra (servers, DBs, load balancers, VPCs, Kubernetes clusters) is described in .tf files.
+      Version-controlled in Git → review via PRs, audit trail.
+      Ensures consistency across Dev/QA/Staging/Prod.
+
+  2. Providers
+      Terraform connects to cloud providers & tools:
+        AWS (EKS, ECS, RDS, S3, ALB)
+        GCP (GKE, Cloud SQL, Storage)
+        Azure (AKS, CosmosDB, Blob)
+        Kubernetes, Helm, Vault, Datadog, GitHub, etc.
+      MNCs use multiple providers for hybrid / multi-cloud strategies.
+
+
+  3. State Management
+      Keeps track of infra in a state file (terraform.tfstate).
+      Remote state in S3 + DynamoDB (AWS), GCS (GCP), Azure Blob, with locking.
+      Ensures teams don’t overwrite each other’s infra changes.
+
+  4. Execution Plan (Plan & Apply)
+      terraform plan → preview what will change.
+      terraform apply → make the change.
+      Safe workflows for infra changes in MNCs with approvals in CI/CD.
+
+  5. Modules (Reusable Components)
+      Packaged templates for common infra:
+        VPC, EKS cluster, RDS DB, Node.js app on ECS/EKS, monitoring stack.
+      Promotes DRY principles & standardization across teams.
+
+  6. Variables & Outputs
+      Variables → parameterize infra (region, instance size, scaling limits).
+      Outputs → expose info (DB endpoint, ALB URL, K8s config).
+      Used in pipelines to pass infra outputs to application deploys.
+
+  7. Workspaces (Multi-Environment)
+      Separate dev, staging, prod within same codebase.
+      Prevents accidental cross-env changes.
+      Widely used in MNCs for multi-team, multi-env projects.
+
+  8. Provisioners (with Caution)
+      Run scripts (shell, Ansible, etc.) after resource creation.
+      Example: Configure Node.js app logs after VM creation.
+      In production, MNCs prefer immutable infra (AMI, Docker images) over provisioners.
+
+  9. Integration with CI/CD
+      Pipelines (GitHub Actions, Jenkins, GitLab CI, Azure DevOps):
+        terraform validate → check syntax
+        terraform plan → approval
+        terraform apply → apply changes
+      MNCs enforce manual approvals for prod.
+
+  10. Resource Graph & Dependencies
+      Terraform builds a dependency graph.
+      Example: Node.js service → depends on RDS DB → depends on VPC.
+      Ensures infra comes up in the correct order.
+
+  11. Drift Detection
+      Detects if infra was changed outside Terraform (manual console changes).
+      Prevents config drift between teams.
+
+  12. Scaling & Autoscaling
+      Define ASGs (Auto Scaling Groups), ECS services, or EKS node pools.
+      Connects with Prometheus/Kubernetes HPA for Node.js workload scaling.
+  
+  13. Secrets & Sensitive Data
+      Works with Vault, SSM Parameter Store, Secrets Manager.
+      Prevents hardcoding API keys or DB passwords.
+
+  14. Policy as Code (Compliance)
+      Enforce rules using Sentinel or OPA (e.g., no public S3 buckets, enforce tagging).
+      MNCs use this for governance & security compliance.
+
+  15. Multi-Cloud & Hybrid Deployments
+      Same codebase can deploy Node.js apps to AWS, GCP, Azure.
+      Some MNCs deploy across clouds for redundancy & cost optimization.
+
+  ✅ Summary – Terraform Features Used in Production (MNCs)
+      Core IaC → versioned infra in Git.
+      State mgmt (remote + locking) → safe team collaboration.
+      Modules, variables, workspaces → reusability & multi-env support.
+      Plan & Apply → safe change management.
+      Integration with CI/CD → automated, approved deployments.
+      Security & Compliance → secrets mgmt + policies.
+      Scaling & Multi-Cloud → Node.js apps run reliably at global scale.

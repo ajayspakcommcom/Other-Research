@@ -1,0 +1,88 @@
+🔑 Key NGINX Features Used in Real-World Node.js Projects
+
+  1. Reverse Proxy
+      NGINX sits in front of Node.js apps.
+      Forwards requests → http://node-service:3000.
+      Hides backend details, improves security, and allows easy scaling.
+
+  2. Load Balancing
+      Distributes traffic across multiple Node.js Pods/instances.
+      Supports:
+        Round robin (default)
+        Least connections
+        IP hash (sticky sessions)
+      Used in microservices & clustered Node.js APIs.
+
+  3. SSL/TLS Termination
+      Terminates HTTPS at NGINX, forwards plain HTTP to Node.js.
+      Offloads CPU-heavy crypto work from Node.js.
+      Supports HTTP/2, OCSP stapling, TLS 1.3.
+
+  4. Static File Serving & Caching
+      Serves static assets (JS, CSS, images) directly (faster than Node.js).
+      Supports browser caching & cache-control headers.
+        Example: React/Angular frontend + Node.js API both hosted behind NGINX.
+
+  5. Compression (Gzip / Brotli)
+      Compresses API responses and static files.
+      Reduces payload size → better performance for users.
+
+  6. Connection Handling
+      Handles thousands of concurrent connections efficiently.
+      Uses event-driven, non-blocking architecture (better than Node.js handling all requests directly).
+
+  7. Security Features
+      Rate limiting (prevent brute-force, DDoS).
+      Request body size limit (e.g., client_max_body_size 10M).
+      IP whitelisting/blacklisting for sensitive endpoints.
+      HSTS, CSP, X-Frame-Options headers via NGINX config.
+      WAF (Web Application Firewall) via NGINX Plus or ModSecurity.
+
+  8. Reverse Proxy Caching
+      Caches responses from Node.js API (useful for GET requests like /products).
+      Reduces load on backend servers.
+
+  9. Rewrite & Redirect Rules
+      Rewrite URLs (e.g., /v1/api → /api).
+      Redirect HTTP → HTTPS.
+      Handle SEO-friendly URLs.
+
+  10. WebSocket & HTTP/2 Support
+      Supports WebSockets for real-time Node.js apps (chat, notifications).
+      Required config: proxy_set_header Upgrade $http_upgrade;.
+      HTTP/2 improves multiplexing and latency for APIs & frontend assets.
+
+  11. Upstream Health Checks
+      Monitors backend Node.js servers.
+      Automatically removes unhealthy ones from load balancer pool.
+      Ensures zero downtime.
+
+  12. Blue-Green / Canary Deployments
+      Route 10% traffic to new Node.js version, 90% to stable version.
+      Achieved via NGINX upstream weight configuration.
+
+  13. Request Routing
+      Path-based routing: /api → Node.js API, / → React frontend.
+      Host-based routing: api.mydomain.com → Node.js, app.mydomain.com → frontend.
+
+  14. Logging & Monitoring
+      Access logs: request method, URL, response time.
+      Error logs: failed requests.
+      Integrated with ELK / Datadog / Prometheus exporters in MNCs.
+
+  15. Content Delivery
+      Acts as edge cache or CDN-like server for static assets.
+      Supports geo-based routing in global deployments.
+
+  16. Docker & Kubernetes Integration
+      Runs as a sidecar or Ingress Controller in Kubernetes.
+      Handles ingress traffic for multiple Node.js microservices.
+
+
+  ✅ Summary – NGINX Features for Node.js in MNC Projects
+      Core: Reverse proxy, load balancing, SSL termination.
+      Performance: Static file serving, caching, compression.
+      Security: Rate limiting, headers, WAF, request size limits.
+      Advanced: WebSockets, HTTP/2, health checks, blue-green deployments.
+      Ops: Logging, monitoring, rewrite/redirect rules.
+      Cloud-native: Used as Ingress Controller in Kubernetes.

@@ -1,0 +1,80 @@
+🔑 Key Node.js Features in Real-World MNC Projects
+
+  1. Asynchronous & Non-Blocking I/O
+      Event-driven, non-blocking architecture allows handling thousands of requests simultaneously.
+      Used in APIs, microservices, chat systems, notification services.
+
+  2. Single-Threaded Event Loop with Worker Threads
+      Handles high concurrency efficiently on a single thread.
+      Worker Threads are used for CPU-intensive tasks (e.g., image processing, ML inference).
+
+  3. Microservices Architecture
+      Node.js is commonly used for building microservices with frameworks like:
+        Express.js, Fastify → REST APIs
+        gRPC, NestJS → structured microservices
+      MNCs split applications into independent services for scalability & maintainability.
+
+  4. Package Ecosystem (npm/yarn/pnpm)
+      Rich ecosystem of libraries for authentication, database drivers, logging, testing, etc.
+      Companies prefer pnpm or yarn workspaces for monorepos.
+
+  5. API Development & Integration
+      Building RESTful APIs and GraphQL APIs.
+      Integrates with gRPC, SOAP services, external APIs, and legacy systems.
+
+  6. Scalability with Clustering & Load Balancing
+      Node.js Cluster module + PM2 or Docker/Kubernetes for scaling horizontally.
+      Used in production to handle millions of requests.
+
+  7. Streaming & Real-Time Communication
+      WebSockets (Socket.io, ws) → chats, notifications, collaborative apps.
+      Streams API → handling large files (video/audio), ETL pipelines, real-time analytics.
+
+  8. Security Practices
+      Helmet.js, CORS, JWT, OAuth2, CSRF protection.
+      Secrets management via Vault, AWS Secrets Manager, or Kubernetes Secrets.
+      Input validation with Joi / Zod.
+
+  9. Logging & Monitoring
+      Winston, Pino, Morgan for structured logging.
+      Integrated with ELK stack (Elasticsearch, Logstash, Kibana) or Grafana + Loki.
+      Metrics exposed via Prometheus exporters.
+
+  10. Error Handling & Resilience
+      Global error handling with middleware.
+      Circuit breakers & retries with resilience libraries.
+      Graceful shutdown for Kubernetes/Docker deployments.
+
+  11. Database Integrations
+      SQL: PostgreSQL, MySQL, MSSQL with Sequelize, Prisma, Knex.
+      NoSQL: MongoDB, Redis, DynamoDB.
+      Connection pooling & caching for high performance.
+
+  12. Message Queues & Event-Driven Systems
+      KafkaJS, RabbitMQ, BullMQ (Redis) for async jobs.
+      Used for background jobs like email, push notifications, data sync.
+
+  13. Testing & Quality Assurance
+      Jest, Mocha, Chai, Supertest → unit & integration tests.
+      Contract testing with Pact in microservices.
+      Companies enforce CI/CD pipelines (Jenkins, GitHub Actions, GitLab CI).
+
+  14. TypeScript Adoption
+      Most MNCs prefer Node.js + TypeScript for type safety & maintainability.
+      Helps with large codebases, API contracts, and reducing runtime errors.
+
+  15. DevOps & Cloud Integration
+      Dockerized Node.js apps deployed on Kubernetes / AWS ECS / GCP Cloud Run.
+      Config management with 12-factor app principles.
+      Infra as Code with Terraform + Ansible.
+
+  16. Performance Optimizations
+      Caching with Redis / CDN.
+      Profiling with clinic.js, flamegraphs, node --inspect.
+      Load testing with k6, Artillery.
+
+  ✅ In MNCs, Node.js is not just used for writing APIs, but also as part of a full ecosystem:
+      Frontend → React/Angular
+      Backend → Node.js + Microservices
+      Infra → Docker, Kubernetes, Terraform, Ansible, AWS/GCP/Azure
+      Monitoring → ELK, Prometheus, Grafana

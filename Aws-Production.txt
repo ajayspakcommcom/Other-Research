@@ -1,0 +1,99 @@
+🔑 Key AWS Features in Real-World MNC Applications
+
+  1. Compute Services
+      EC2 (Elastic Compute Cloud): Core compute, autoscaling groups for resilience.
+      ECS / EKS / Fargate: Running Docker/Kubernetes workloads without worrying about infrastructure.
+      Lambda (Serverless): Used for event-driven tasks (notifications, triggers, ETL).
+
+  2. Storage Services
+      S3 (Simple Storage Service): Object storage for media, backups, logs, ML datasets.
+      EBS (Elastic Block Store): Persistent storage for EC2 instances.
+      EFS (Elastic File System): Shared file storage for apps & microservices.
+      Glacier: Archival and long-term backup.
+
+  3. Database Services
+      RDS (Relational Database Service): Managed MySQL, PostgreSQL, Oracle, MSSQL.
+      Aurora: High-performance, globally distributed SQL DB.
+      DynamoDB: Serverless NoSQL with millisecond latency.
+      ElastiCache (Redis/Memcached): Caching for performance.
+      DocumentDB: MongoDB-compatible managed DB.
+
+  4. Networking & Content Delivery
+      VPC (Virtual Private Cloud): Isolated network, subnets, NAT, firewalls.
+      Route 53: Global DNS & traffic routing.
+      CloudFront (CDN): Edge caching for static/dynamic content.
+      API Gateway: Secure API exposure (REST & WebSocket).
+      Direct Connect / VPN: Private connection to on-prem data centers.
+
+  5. Security & Identity
+      IAM (Identity & Access Management): Fine-grained permissions, roles, and policies.
+      KMS (Key Management Service): Encryption key management.
+      Secrets Manager / Parameter Store: Secure storage for app secrets.
+      Shield & WAF: DDoS protection, firewall for web traffic.
+      GuardDuty & Macie: Threat detection and sensitive data monitoring.
+
+  6. Monitoring & Logging
+      CloudWatch: Metrics, alarms, log aggregation.
+      X-Ray: Distributed tracing for microservices.
+      CloudTrail: API audit logs for compliance.
+      OpenTelemetry + Prometheus/Grafana integrations.
+
+  7. DevOps & CI/CD
+      CodePipeline / CodeBuild / CodeDeploy: AWS-native CI/CD pipelines.
+      ECR (Elastic Container Registry): Private Docker image registry.
+      Integrated with Jenkins, GitHub Actions, GitLab CI for deployments.
+
+  8. Scalability & High Availability
+      Auto Scaling Groups: Horizontal scaling of EC2/ECS/EKS.
+      Elastic Load Balancers (ALB, NLB, GLB): Distribute traffic across services.
+      Multi-AZ Deployments: Database & app redundancy.
+      Multi-Region Deployments: Global failover for critical apps.
+
+  9. Data Analytics & Streaming
+      Kinesis (Data Streams / Firehose): Real-time data streaming.
+      MSK (Managed Kafka): Fully managed Kafka cluster.
+      Athena: Query S3 data with SQL.
+      EMR: Big data processing (Hadoop, Spark).
+      Redshift: Data warehouse for BI & analytics.
+
+  10. AI/ML & Advanced Services
+      SageMaker: Train, deploy ML models.
+      Rekognition, Comprehend, Polly, Lex, Translate: AI APIs (vision, NLP, speech).
+      Bedrock: Generative AI foundation models.
+
+  11. Event-Driven Architecture
+      SQS (Simple Queue Service): Decoupling microservices with queues.
+      SNS (Simple Notification Service): Pub/Sub messaging.
+      EventBridge: Event routing for SaaS integrations.
+
+  12. Cost Management
+      Cost Explorer & Budgets: Track and control spend.
+      Savings Plans / Reserved Instances: Optimize costs.
+      Trusted Advisor: Recommendations on cost, performance, security.
+
+  13. Hybrid & Enterprise Integrations
+      Outposts: AWS services on-prem.
+      Storage Gateway: Hybrid cloud storage.
+      Transit Gateway: Multi-VPC networking at scale.
+
+  ✅ How MNCs Actually Use AWS
+      Microservices & APIs → Deployed on EKS/ECS + API Gateway.
+      Data Lakes & Analytics → S3 + Glue + Athena + Redshift.
+      Real-Time Apps → DynamoDB + ElastiCache + Kafka/Kinesis.
+      Enterprise Security → IAM, KMS, GuardDuty, Secrets Manager.
+      CI/CD → GitHub Actions → ECR → ECS/EKS → CloudWatch/X-Ray.
+                
+
+
+
+
+
+
+
+
+
+
+
+
+
+

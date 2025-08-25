@@ -1,0 +1,89 @@
+🔑 Key Grafana Features Used in Real Node.js Projects (MNC Use Cases)
+
+  1. Dashboards & Visualization
+      Build interactive dashboards for Node.js metrics (requests, latency, CPU, memory, event loop lag).
+      Combine metrics from Prometheus, Loki, Elasticsearch, InfluxDB, CloudWatch, Datadog.
+      Common panels:
+        Request throughput (RPS)
+        p95/p99 latency
+        Error rates (4xx, 5xx)
+        CPU / Memory per pod
+        GC pauses, event loop delay
+
+2. Data Source Integrations
+      Connects to multiple backends:
+      Prometheus → app/infrastructure metrics
+        Loki / ELK → logs
+        Tempo / Jaeger → traces
+        MySQL/Postgres → business KPIs
+      MNCs use Grafana as a single pane of glass for app + infra + business metrics.
+
+
+3. Alerting & Notifications
+      Alerts configured directly in Grafana or via Prometheus Alertmanager.
+      Notifications sent to:
+        Slack, MS Teams, Email, PagerDuty, OpsGenie, Webhooks
+      Typical Node.js alerts:
+        Latency > 1s for 5m
+        Error rate > 5%
+        Memory > 80%
+
+4. Annotations
+      Overlay deployments, incidents, feature flags on dashboards.
+      Helps correlate spikes in errors/latency with code releases or infra changes.
+
+5. Templating & Variables
+      Dynamic dashboards with filters (service, environment, cluster, region).
+      Example: Select app=node-api, env=prod → auto-refresh panels.
+      Used in MNCs where hundreds of Node.js microservices exist.
+
+6. Role-Based Access Control (RBAC)
+      Different teams get different access:
+        Devs → read-only dashboards.
+        SREs → edit dashboards.
+        Managers → business KPIs.
+      Integrates with SSO/LDAP/OAuth for enterprise security.
+
+7. Provisioning & Infrastructure-as-Code
+    Dashboards, alerts, and datasources defined in YAML/JSON.
+    Managed via GitOps (version-controlled in Git, deployed via CI/CD).
+    MNCs treat Grafana configs like code for consistency across environments.
+
+8. Explore Mode (Logs + Metrics Correlation)
+    Debugging flow:
+      Check latency spike → drill into logs → check traces.
+    Very powerful for Node.js incident response (SRE on-call).
+
+9. Alert Rules with Unified Alerting
+    Supports Prometheus-style rules.
+    Example:
+      rate(http_requests_total{job="node-api",status=~"5.."}[5m]) 
+        / rate(http_requests_total{job="node-api"}[5m]) > 0.05
+    → Fires alert if error ratio > 5%.
+
+10. Dashboards for Business + App Metrics
+    Not just infra: teams visualize business KPIs.
+    Example (Node.js e-commerce app):
+      Orders per minute
+      Payment failures
+      Active users
+
+11. Plugin Ecosystem
+    Panels (heatmaps, geomaps, pie charts).
+    Data sources (Splunk, New Relic, Snowflake, Cloud providers).
+    Used in large enterprises for cross-tool integration.
+
+12. Long-Term Observability
+    With Grafana Mimir / Thanos / Cortex for metrics retention.
+    With Grafana Loki for logs.
+    With Grafana Tempo for distributed traces.\
+    Enables full observability stack for Node.js projects.
+
+✅ Summary – Grafana in Node.js Production (MNC Use)
+    Dashboards → real-time Node.js performance monitoring.
+    Alerts → proactive incident management.
+    Data sources → metrics + logs + traces in one place.
+    Annotations → correlate releases with incidents.
+    RBAC + SSO → enterprise security.
+    Provisioning/IaC → GitOps-driven dashboards.
+    Full observability → metrics, logs, traces unified.

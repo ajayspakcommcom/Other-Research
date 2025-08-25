@@ -1,0 +1,55 @@
+🔑 Key Git Features in Real-World MNC Applications
+
+  1. Distributed Version Control
+      Every developer has a full local copy of the repository (no central dependency).
+      Enables offline commits, branching, merging.
+      Faster collaboration in global teams.
+  
+  2. Branching & Merging Strategies
+      Feature Branching: Each new feature in its own branch.
+      Release Branching: Stable release branches (v1.0, v2.0).
+      Hotfix Branches: Quick patches on production.
+      Git Flow & Trunk-Based Development → common strategies in MNCs.
+  
+  3. Pull Requests & Code Reviews (via GitHub/GitLab/Bitbucket)
+      Structured peer reviews before merging code.
+      Inline comments, approvals, automated checks.
+      Enforce minimum approvers, CI checks, signed commits.
+  
+  4. Commit History & Traceability
+      Git keeps a complete history of code changes.
+      Every commit has an author, timestamp, and hash → accountability.
+      Teams use conventional commits / semantic versioning for clear history.
+  
+  5. Collaboration Across Teams
+      Multiple teams can work on the same repo without conflicts.
+      Forking & cloning enables experimentation without affecting main codebase.
+      Git is integrated with Jira, Slack, Jenkins, GitHub Actions for team workflows.
+  
+  6. Stashing & Rebase
+      git stash: Save work-in-progress temporarily without committing.
+      git rebase: Keep commit history clean (used in enterprise projects).
+  
+  7. CI/CD Integration
+      Git commits → trigger pipelines in Jenkins, GitHub Actions, GitLab CI, AWS CodePipeline.
+      Used to run automated tests, security scans, build & deployment.
+  
+  8. Versioning & Tagging
+      Git tags mark specific versions (v1.0.0, release-2025-08).
+      Helps in release management and rollback strategies.
+  
+  9. Security & Compliance
+      Signed commits (GPG/SSH keys) → verify code authors.
+      Protected branches → prevent direct pushes to main/master.
+      Audit logs for compliance (used in BFSI, healthcare, MNCs).
+  
+  10. Open Source + Inner Source
+      Git powers open source collaboration (Linux, Node.js, Kubernetes).
+      Inside MNCs, Git is used for inner source: shared internal libraries across teams.
+
+  ✅ How MNCs use Git in practice:
+      Developer creates a feature branch → writes code → commits.
+      Opens a Pull Request → automated tests + code review.
+      Once approved, merges into main branch.
+      CI/CD pipeline builds Docker image → pushes to registry → deploys to AWS/GCP/Azure.
+      Release is tagged and versioned → rollback possible if issues occur.

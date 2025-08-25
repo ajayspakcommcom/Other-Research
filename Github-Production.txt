@@ -1,0 +1,69 @@
+🔑 Key GitHub Features in Real-World MNC Applications
+
+  1. Source Code Management (SCM)
+      Centralized Git repositories for application code, infra code (Terraform/Ansible), CI/CD pipelines.
+      Supports branching strategy (Git Flow, Trunk-based development).
+      Pull Requests (PRs) with code reviews & discussions.
+
+  2. Collaboration & Code Quality
+      Pull Requests (PRs): Peer review, inline comments, approval gates.
+      Code Owners: Enforce mandatory review by specific teams before merging.
+      Protected Branches: Prevent direct commits, require approvals & CI checks.
+      Draft PRs: Early feedback before merge-ready.
+
+  3. GitHub Actions (CI/CD)
+      Automates build → test → deploy pipelines.
+      Triggers on push, PR, or schedule.
+      Used to:
+        Run unit/integration tests.
+        Build Docker images & push to AWS ECR, GCP Artifact Registry, or Azure ACR.
+        Deploy apps to AWS (EKS/ECS/Lambda), Kubernetes, Azure, or GCP.
+      Supports matrix builds for multiple languages/environments.
+
+  4. Security & Compliance
+      Dependabot: Automated dependency upgrades.
+      Security Advisories & Alerts: CVE scanning for vulnerable libraries.
+      CodeQL Scanning: Static analysis for security issues.
+      Secret Scanning: Detect API keys, passwords in code.
+      Branch Protection Rules: Require tests, approvals, signed commits.
+
+  5. Project Management & Collaboration
+      GitHub Projects / Issues: Agile boards, Kanban, Sprint tracking.
+      Milestones & Labels: Organize tasks and releases.
+      Discussions: Open forum for design decisions & collaboration.
+      Wiki & Documentation: Centralized technical documentation.
+
+  6. Integrations
+      Integrates with Slack, Jira, Jenkins, SonarQube, Datadog.
+      GitHub → AWS CodePipeline / Azure DevOps / GCP Cloud Build for hybrid CI/CD.
+      Webhooks & APIs allow custom automation.
+
+  7. Release Management
+      GitHub Releases: Tag versions, attach changelogs & binaries.
+      Automated Changelogs: Generate release notes from merged PRs.
+      Versioning Strategies: Semantic Versioning, automated tagging.
+
+  8. Observability & Insights
+      Insights Dashboard: PR activity, contributor stats, issue metrics.
+      Audit Logs (GitHub Enterprise): Track user activity for compliance.
+      Code Frequency Reports: Monitor commit velocity & productivity.
+
+  9. Enterprise Features (GitHub Enterprise)
+      SSO Integration (SAML, LDAP, Okta, Azure AD).
+      Self-Hosted Runners: For private build agents inside company networks.
+      Audit Logging & Compliance Reports (SOC2, HIPAA, GDPR).
+      Customizable Policies: Enforce org-wide rules.
+
+  10. Open Source & Inner Source
+      Host internal reusable libraries for teams across the org.
+      Contribute to open source projects while keeping internal code private.
+      Inner Source culture → teams use GitHub internally like open-source projects.
+
+  ✅ How MNCs actually use GitHub daily:
+      Developers push feature branches → PRs with code reviews.
+      CI/CD via GitHub Actions builds/tests the app → pushes Docker image to AWS ECR.
+      Deployment pipeline triggers → deploys to Kubernetes (EKS/AKS/GKE).
+      Dependabot updates dependencies weekly.
+      Security scans block merges if vulnerabilities exist.
+      Releases tagged → auto-changelog → production deployment.
+      Jira/Slack integrated for issue tracking & notifications.
