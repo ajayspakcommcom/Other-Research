@@ -1,0 +1,70 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+metadata:
+  name: spak-platform-base
+
+namespace: spak-platform
+
+resources:
+- namespace.yaml
+- configmaps.yaml
+- secrets.yaml
+- storage.yaml
+- databases.yaml
+- applications.yaml
+- services.yaml
+- nginx.yaml
+- monitoring.yaml
+- monitoring-config.yaml
+
+images:
+- name: spak-backend
+  newTag: latest
+- name: spak-frontend
+  newTag: latest
+
+commonLabels:
+  app.kubernetes.io/instance: spak-platform
+  app.kubernetes.io/managed-by: kustomize
+
+replicas:
+- name: spak-backend
+  count: 2
+- name: spak-frontend
+  count: 2
+- name: spak-nginx
+  count: 2
+
+patchesStrategicMerge:
+- |-
+  apiVersion: apps/v1
+  kind: Deployment
+  metadata:
+    name: spak-backend
+    namespace: spak-platform
+  spec:
+    template:
+      metadata:
+        annotations:
+          deployment.kubernetes.io/revision: "1"
+      spec:
+        containers:
+        - name: backend
+          imagePullPolicy: Always
+
+- |-
+  apiVersion: apps/v1
+  kind: Deployment
+  metadata:
+    name: spak-frontend
+    namespace: spak-platform
+  spec:
+    template:
+      metadata:
+        annotations:
+          deployment.kubernetes.io/revision: "1"
+      spec:
+        containers:
+        - name: frontend
+          imagePullPolicy: Always

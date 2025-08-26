@@ -1,0 +1,256 @@
+name: CI/CD Pipeline
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main ]
+
+env:
+  AWS_REGION: us-west-2
+  ECR_REPOSITORY_BACKEND: spak-backend
+  ECR_REPOSITORY_FRONTEND: spak-frontend
+
+jobs:
+  # Backend CI/CD
+  backend:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./backend
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '18'
+        cache: 'npm'
+        cache-dependency-path: backend/package-lock.json
+
+    - name: Install dependencies
+      run: npm ci
+
+    - name: Run linting
+      run: npm run lint
+
+    - name: Run type checking
+      run: npm run type-check
+
+    - name: Run tests
+      run: npm run test:cov
+
+    - name: Upload coverage to Codecov
+      uses: codecov/codecov-action@v3
+      with:
+        file: ./backend/coverage/lcov.info
+        flags: backend
+
+    - name: Build application
+      run: npm run build
+
+    - name: Configure AWS credentials
+      if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/develop'
+      uses: aws-actions/configure-aws-credentials@v4
+      with:
+        aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        aws-region: ${{ env.AWS_REGION }}
+
+    - name: Login to Amazon ECR
+      if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/develop'
+      id: login-ecr
+      uses: aws-actions/amazon-ecr-login@v2
+
+    - name: Build and push Docker image
+      if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/develop'
+      env:
+        ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+        IMAGE_TAG: ${{ github.sha }}
+      run: |
+        docker build -t $ECR_REGISTRY/$ECR_REPOSITORY_BACKEND:$IMAGE_TAG .
+        docker push $ECR_REGISTRY/$ECR_REPOSITORY_BACKEND:$IMAGE_TAG
+        
+        # Tag as latest for main branch
+        if [ "${{ github.ref }}" = "refs/heads/main" ]; then
+          docker tag $ECR_REGISTRY/$ECR_REPOSITORY_BACKEND:$IMAGE_TAG $ECR_REGISTRY/$ECR_REPOSITORY_BACKEND:latest
+          docker push $ECR_REGISTRY/$ECR_REPOSITORY_BACKEND:latest
+        fi
+
+  # Frontend CI/CD
+  frontend:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./frontend
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '18'
+        cache: 'npm'
+        cache-dependency-path: frontend/package-lock.json
+
+    - name: Install dependencies
+      run: npm ci
+
+    - name: Run linting
+      run: npm run lint
+
+    - name: Run type checking
+      run: npm run type-check
+
+    - name: Run tests
+      run: npm run test
+
+    - name: Build application
+      run: npm run build
+      env:
+        REACT_APP_API_URL: ${{ secrets.REACT_APP_API_URL }}
+        REACT_APP_GITHUB_CLIENT_ID: ${{ secrets.REACT_APP_GITHUB_CLIENT_ID }}
+
+    - name: Configure AWS credentials
+      if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/develop'
+      uses: aws-actions/configure-aws-credentials@v4
+      with:
+        aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        aws-region: ${{ env.AWS_REGION }}
+
+    - name: Login to Amazon ECR
+      if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/develop'
+      id: login-ecr
+      uses: aws-actions/amazon-ecr-login@v2
+
+    - name: Build and push Docker image
+      if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/develop'
+      env:
+        ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+        IMAGE_TAG: ${{ github.sha }}
+      run: |
+        docker build -t $ECR_REGISTRY/$ECR_REPOSITORY_FRONTEND:$IMAGE_TAG .
+        docker push $ECR_REGISTRY/$ECR_REPOSITORY_FRONTEND:$IMAGE_TAG
+        
+        # Tag as latest for main branch
+        if [ "${{ github.ref }}" = "refs/heads/main" ]; then
+          docker tag $ECR_REGISTRY/$ECR_REPOSITORY_FRONTEND:$IMAGE_TAG $ECR_REGISTRY/$ECR_REPOSITORY_FRONTEND:latest
+          docker push $ECR_REGISTRY/$ECR_REPOSITORY_FRONTEND:latest
+        fi
+
+  # Security scanning
+  security:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Run Trivy vulnerability scanner
+      uses: aquasecurity/trivy-action@master
+      with:
+        scan-type: 'fs'
+        scan-ref: '.'
+        format: 'sarif'
+        output: 'trivy-results.sarif'
+
+    - name: Upload Trivy scan results to GitHub Security tab
+      uses: github/codeql-action/upload-sarif@v3
+      with:
+        sarif_file: 'trivy-results.sarif'
+
+    - name: Run CodeQL Analysis
+      uses: github/codeql-action/analyze@v3
+
+  # Deploy to development
+  deploy-dev:
+    if: github.ref == 'refs/heads/develop'
+    needs: [backend, frontend]
+    runs-on: ubuntu-latest
+    environment: development
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Configure AWS credentials
+      uses: aws-actions/configure-aws-credentials@v4
+      with:
+        aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        aws-region: ${{ env.AWS_REGION }}
+
+    - name: Update EKS kubeconfig
+      run: |
+        aws eks update-kubeconfig --region ${{ env.AWS_REGION }} --name spak-communication-dev
+
+    - name: Deploy to development
+      run: |
+        # Update image tags in kustomization
+        cd infrastructure/kubernetes/overlays/development
+        kustomize edit set image spak-backend=${{ secrets.ECR_REGISTRY }}/spak-backend:${{ github.sha }}
+        kustomize edit set image spak-frontend=${{ secrets.ECR_REGISTRY }}/spak-frontend:${{ github.sha }}
+        
+        # Apply to cluster
+        kubectl apply -k .
+        
+        # Wait for rollout
+        kubectl rollout status deployment/dev-spak-backend -n spak-platform-dev
+        kubectl rollout status deployment/dev-spak-frontend -n spak-platform-dev
+
+  # Deploy to production
+  deploy-prod:
+    if: github.ref == 'refs/heads/main'
+    needs: [backend, frontend, security]
+    runs-on: ubuntu-latest
+    environment: production
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Configure AWS credentials
+      uses: aws-actions/configure-aws-credentials@v4
+      with:
+        aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        aws-region: ${{ env.AWS_REGION }}
+
+    - name: Update EKS kubeconfig
+      run: |
+        aws eks update-kubeconfig --region ${{ env.AWS_REGION }} --name spak-communication-prod
+
+    - name: Deploy to production
+      run: |
+        # Update image tags in kustomization
+        cd infrastructure/kubernetes/overlays/production
+        kustomize edit set image spak-backend=${{ secrets.ECR_REGISTRY }}/spak-backend:${{ github.sha }}
+        kustomize edit set image spak-frontend=${{ secrets.ECR_REGISTRY }}/spak-frontend:${{ github.sha }}
+        
+        # Apply to cluster
+        kubectl apply -k .
+        
+        # Wait for rollout
+        kubectl rollout status deployment/spak-backend -n spak-platform
+        kubectl rollout status deployment/spak-frontend -n spak-platform
+
+    - name: Run smoke tests
+      run: |
+        # Wait for services to be ready
+        kubectl wait --for=condition=ready pod -l app.kubernetes.io/name=spak-backend -n spak-platform --timeout=300s
+        
+        # Run basic health checks
+        kubectl exec -n spak-platform deployment/spak-backend -- curl -f http://localhost:3001/api/v1/health
+
+    - name: Notify deployment success
+      if: success()
+      uses: 8398a7/action-slack@v3
+      with:
+        status: success
+        text: 'Production deployment successful! 🚀'
+      env:
+        SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}

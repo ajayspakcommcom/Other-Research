@@ -1,0 +1,133 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: spak-mongodb
+  namespace: spak-platform
+  labels:
+    app.kubernetes.io/name: spak-mongodb
+    app.kubernetes.io/component: database
+spec:
+  selector:
+    app.kubernetes.io/name: spak-mongodb
+  ports:
+  - port: 27017
+    targetPort: 27017
+    name: mongodb
+  type: ClusterIP
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: spak-redis
+  namespace: spak-platform
+  labels:
+    app.kubernetes.io/name: spak-redis
+    app.kubernetes.io/component: cache
+spec:
+  selector:
+    app.kubernetes.io/name: spak-redis
+  ports:
+  - port: 6379
+    targetPort: 6379
+    name: redis
+  type: ClusterIP
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: spak-backend
+  namespace: spak-platform
+  labels:
+    app.kubernetes.io/name: spak-backend
+    app.kubernetes.io/component: api
+  annotations:
+    prometheus.io/scrape: "true"
+    prometheus.io/port: "3001"
+    prometheus.io/path: "/api/v1/metrics"
+spec:
+  selector:
+    app.kubernetes.io/name: spak-backend
+  ports:
+  - port: 3001
+    targetPort: 3001
+    name: http
+  type: ClusterIP
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: spak-frontend
+  namespace: spak-platform
+  labels:
+    app.kubernetes.io/name: spak-frontend
+    app.kubernetes.io/component: web
+spec:
+  selector:
+    app.kubernetes.io/name: spak-frontend
+  ports:
+  - port: 3000
+    targetPort: 3000
+    name: http
+  type: ClusterIP
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: spak-nginx
+  namespace: spak-platform
+  labels:
+    app.kubernetes.io/name: spak-nginx
+    app.kubernetes.io/component: proxy
+spec:
+  selector:
+    app.kubernetes.io/name: spak-nginx
+  ports:
+  - port: 80
+    targetPort: 80
+    name: http
+  - port: 443
+    targetPort: 443
+    name: https
+  type: LoadBalancer  # For cloud providers (AWS ELB, GCP LB, etc.)
+  loadBalancerSourceRanges:
+  - 0.0.0.0/0  # Allow traffic from anywhere (restrict as needed)
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: prometheus
+  namespace: spak-platform
+  labels:
+    app.kubernetes.io/name: prometheus
+    app.kubernetes.io/component: monitoring
+spec:
+  selector:
+    app.kubernetes.io/name: prometheus
+  ports:
+  - port: 9090
+    targetPort: 9090
+    name: http
+  type: ClusterIP
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: grafana
+  namespace: spak-platform
+  labels:
+    app.kubernetes.io/name: grafana
+    app.kubernetes.io/component: monitoring
+spec:
+  selector:
+    app.kubernetes.io/name: grafana
+  ports:
+  - port: 3000
+    targetPort: 3000
+    name: http
+  type: ClusterIP

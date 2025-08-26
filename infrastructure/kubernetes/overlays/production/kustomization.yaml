@@ -1,0 +1,66 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+metadata:
+  name: spak-platform-production
+
+namespace: spak-platform
+
+resources:
+- ../../base
+
+patchesStrategicMerge:
+- |-
+  apiVersion: apps/v1
+  kind: Deployment
+  metadata:
+    name: spak-backend
+    namespace: spak-platform
+  spec:
+    template:
+      spec:
+        containers:
+        - name: backend
+          resources:
+            requests:
+              memory: "512Mi"
+              cpu: "300m"
+            limits:
+              memory: "1Gi"
+              cpu: "800m"
+
+- |-
+  apiVersion: apps/v1
+  kind: Deployment
+  metadata:
+    name: spak-frontend
+    namespace: spak-platform
+  spec:
+    template:
+      spec:
+        containers:
+        - name: frontend
+          resources:
+            requests:
+              memory: "256Mi"
+              cpu: "150m"
+            limits:
+              memory: "512Mi"
+              cpu: "300m"
+
+replicas:
+- name: spak-backend
+  count: 3
+- name: spak-frontend
+  count: 3
+- name: spak-nginx
+  count: 2
+
+images:
+- name: spak-backend
+  newTag: v1.0.0
+- name: spak-frontend
+  newTag: v1.0.0
+
+commonLabels:
+  environment: production

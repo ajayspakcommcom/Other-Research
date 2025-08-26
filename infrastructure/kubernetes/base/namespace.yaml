@@ -1,0 +1,8 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: spak-platform
+  labels:
+    name: spak-platform
+    app.kubernetes.io/name: spak-platform
+    app.kubernetes.io/component: namespace

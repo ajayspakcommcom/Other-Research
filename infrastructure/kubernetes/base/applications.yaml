@@ -1,0 +1,232 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: spak-backend
+  namespace: spak-platform
+  labels:
+    app.kubernetes.io/name: spak-backend
+    app.kubernetes.io/component: api
+    app.kubernetes.io/version: "1.0.0"
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: spak-backend
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 0
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: spak-backend
+        app.kubernetes.io/component: api
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "3001"
+        prometheus.io/path: "/api/v1/metrics"
+    spec:
+      containers:
+      - name: backend
+        image: spak-backend:latest
+        ports:
+        - containerPort: 3001
+          name: http
+        env:
+        - name: NODE_ENV
+          valueFrom:
+            configMapKeyRef:
+              name: spak-backend-config
+              key: NODE_ENV
+        - name: API_PORT
+          valueFrom:
+            configMapKeyRef:
+              name: spak-backend-config
+              key: API_PORT
+        - name: MONGODB_URI
+          valueFrom:
+            configMapKeyRef:
+              name: spak-backend-config
+              key: MONGODB_URI
+        - name: REDIS_URL
+          valueFrom:
+            configMapKeyRef:
+              name: spak-backend-config
+              key: REDIS_URL
+        - name: JWT_SECRET
+          valueFrom:
+            secretKeyRef:
+              name: spak-backend-secrets
+              key: JWT_SECRET
+        - name: JWT_REFRESH_SECRET
+          valueFrom:
+            secretKeyRef:
+              name: spak-backend-secrets
+              key: JWT_REFRESH_SECRET
+        - name: JWT_EXPIRES_IN
+          valueFrom:
+            configMapKeyRef:
+              name: spak-backend-config
+              key: JWT_EXPIRES_IN
+        - name: JWT_REFRESH_EXPIRES_IN
+          valueFrom:
+            configMapKeyRef:
+              name: spak-backend-config
+              key: JWT_REFRESH_EXPIRES_IN
+        - name: GITHUB_CLIENT_ID
+          valueFrom:
+            secretKeyRef:
+              name: spak-backend-secrets
+              key: GITHUB_CLIENT_ID
+        - name: GITHUB_CLIENT_SECRET
+          valueFrom:
+            secretKeyRef:
+              name: spak-backend-secrets
+              key: GITHUB_CLIENT_SECRET
+        - name: GITHUB_CALLBACK_URL
+          valueFrom:
+            configMapKeyRef:
+              name: spak-backend-config
+              key: GITHUB_CALLBACK_URL
+        - name: FRONTEND_URL
+          valueFrom:
+            configMapKeyRef:
+              name: spak-backend-config
+              key: FRONTEND_URL
+        - name: THROTTLE_TTL
+          valueFrom:
+            configMapKeyRef:
+              name: spak-backend-config
+              key: THROTTLE_TTL
+        - name: THROTTLE_LIMIT
+          valueFrom:
+            configMapKeyRef:
+              name: spak-backend-config
+              key: THROTTLE_LIMIT
+        - name: CACHE_TTL
+          valueFrom:
+            configMapKeyRef:
+              name: spak-backend-config
+              key: CACHE_TTL
+        - name: CACHE_MAX
+          valueFrom:
+            configMapKeyRef:
+              name: spak-backend-config
+              key: CACHE_MAX
+        - name: LOG_LEVEL
+          valueFrom:
+            configMapKeyRef:
+              name: spak-backend-config
+              key: LOG_LEVEL
+        - name: LOG_FORMAT
+          valueFrom:
+            configMapKeyRef:
+              name: spak-backend-config
+              key: LOG_FORMAT
+        resources:
+          requests:
+            memory: "256Mi"
+            cpu: "200m"
+          limits:
+            memory: "512Mi"
+            cpu: "500m"
+        livenessProbe:
+          httpGet:
+            path: /api/v1/health/liveness
+            port: 3001
+          initialDelaySeconds: 30
+          periodSeconds: 10
+          timeoutSeconds: 5
+          failureThreshold: 3
+        readinessProbe:
+          httpGet:
+            path: /api/v1/health/readiness
+            port: 3001
+          initialDelaySeconds: 5
+          periodSeconds: 5
+          timeoutSeconds: 3
+          failureThreshold: 3
+        securityContext:
+          runAsNonRoot: true
+          runAsUser: 1001
+          allowPrivilegeEscalation: false
+          readOnlyRootFilesystem: true
+          capabilities:
+            drop:
+            - ALL
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: spak-frontend
+  namespace: spak-platform
+  labels:
+    app.kubernetes.io/name: spak-frontend
+    app.kubernetes.io/component: web
+    app.kubernetes.io/version: "1.0.0"
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: spak-frontend
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 0
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: spak-frontend
+        app.kubernetes.io/component: web
+    spec:
+      containers:
+      - name: frontend
+        image: spak-frontend:latest
+        ports:
+        - containerPort: 3000
+          name: http
+        env:
+        - name: REACT_APP_API_URL
+          valueFrom:
+            configMapKeyRef:
+              name: spak-frontend-config
+              key: REACT_APP_API_URL
+        - name: REACT_APP_ENVIRONMENT
+          valueFrom:
+            configMapKeyRef:
+              name: spak-frontend-config
+              key: REACT_APP_ENVIRONMENT
+        resources:
+          requests:
+            memory: "128Mi"
+            cpu: "100m"
+          limits:
+            memory: "256Mi"
+            cpu: "200m"
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: 3000
+          initialDelaySeconds: 30
+          periodSeconds: 10
+          timeoutSeconds: 5
+          failureThreshold: 3
+        readinessProbe:
+          httpGet:
+            path: /health
+            port: 3000
+          initialDelaySeconds: 5
+          periodSeconds: 5
+          timeoutSeconds: 3
+          failureThreshold: 3
+        securityContext:
+          runAsNonRoot: true
+          runAsUser: 1001
+          allowPrivilegeEscalation: false
+          readOnlyRootFilesystem: true
+          capabilities:
+            drop:
+            - ALL
