@@ -1,0 +1,302 @@
+name: Node.js Docker CI/CD Pipeline
+
+on:
+  push:
+    branches: [ main, develop ]
+    paths:
+      - 'nodejs-docker-project/**'
+  pull_request:
+    branches: [ main ]
+    paths:
+      - 'nodejs-docker-project/**'
+
+env:
+  REGISTRY: ghcr.io
+  IMAGE_NAME: ${{ github.repository }}/nodejs-docker-app
+
+jobs:
+  # Lint and Test
+  test:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./nodejs-docker-project
+    
+    strategy:
+      matrix:
+        node-version: [18.x, 20.x]
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Setup Node.js ${{ matrix.node-version }}
+      uses: actions/setup-node@v4
+      with:
+        node-version: ${{ matrix.node-version }}
+        cache: 'npm'
+        cache-dependency-path: './nodejs-docker-project/package-lock.json'
+
+    - name: Install dependencies
+      run: npm ci
+
+    - name: Run linter
+      run: npm run lint
+
+    - name: Run tests
+      run: npm test
+
+    - name: Run test coverage
+      run: npm run test:coverage
+
+    - name: Upload coverage reports
+      uses: codecov/codecov-action@v3
+      if: matrix.node-version == '20.x'
+      with:
+        file: ./nodejs-docker-project/coverage/lcov.info
+        flags: unittests
+        name: nodejs-docker-app
+
+  # Security scanning
+  security:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./nodejs-docker-project
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '20.x'
+        cache: 'npm'
+        cache-dependency-path: './nodejs-docker-project/package-lock.json'
+
+    - name: Install dependencies
+      run: npm ci
+
+    - name: Run security audit
+      run: npm audit --audit-level=high
+
+    - name: Run dependency check
+      uses: securecodewarrior/github-action-add-sarif@v1
+      with:
+        sarif-file: security-audit.sarif
+      continue-on-error: true
+
+  # Build and push Docker image
+  build:
+    needs: [test, security]
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./nodejs-docker-project
+    
+    permissions:
+      contents: read
+      packages: write
+      security-events: write
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Setup Docker Buildx
+      uses: docker/setup-buildx-action@v3
+
+    - name: Log in to Container Registry
+      uses: docker/login-action@v3
+      with:
+        registry: ${{ env.REGISTRY }}
+        username: ${{ github.actor }}
+        password: ${{ secrets.GITHUB_TOKEN }}
+
+    - name: Extract metadata
+      id: meta
+      uses: docker/metadata-action@v5
+      with:
+        images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+        tags: |
+          type=ref,event=branch
+          type=ref,event=pr
+          type=sha,prefix={{branch}}-
+          type=raw,value=latest,enable={{is_default_branch}}
+
+    - name: Build and push Docker image
+      uses: docker/build-push-action@v5
+      with:
+        context: ./nodejs-docker-project
+        file: ./nodejs-docker-project/Dockerfile
+        platforms: linux/amd64,linux/arm64
+        push: true
+        tags: ${{ steps.meta.outputs.tags }}
+        labels: ${{ steps.meta.outputs.labels }}
+        cache-from: type=gha
+        cache-to: type=gha,mode=max
+        target: production
+
+    - name: Run Trivy vulnerability scanner
+      uses: aquasecurity/trivy-action@master
+      with:
+        image-ref: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest
+        format: 'sarif'
+        output: 'trivy-results.sarif'
+
+    - name: Upload Trivy scan results to GitHub Security tab
+      uses: github/codeql-action/upload-sarif@v3
+      if: always()
+      with:
+        sarif_file: 'trivy-results.sarif'
+
+  # Integration tests with Docker Compose
+  integration:
+    needs: [build]
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./nodejs-docker-project
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Create .env file
+      run: |
+        cp .env.example .env
+        echo "NODE_ENV=test" >> .env
+
+    - name: Start services with Docker Compose
+      run: docker-compose -f docker-compose.yml up -d
+
+    - name: Wait for services to be ready
+      run: |
+        echo "Waiting for services to start..."
+        timeout 300 bash -c 'until curl -f http://localhost/health; do sleep 5; done'
+
+    - name: Run integration tests
+      run: |
+        # Test API endpoints
+        curl -f http://localhost/health
+        curl -f http://localhost/metrics
+        curl -f http://localhost/
+        
+        # Test user creation
+        curl -X POST http://localhost/api/users \
+          -H "Content-Type: application/json" \
+          -d '{"username":"testuser","email":"test@example.com","password":"password123","firstName":"Test","lastName":"User"}' \
+          | grep -q "success"
+
+    - name: Show service logs on failure
+      if: failure()
+      run: |
+        docker-compose logs app
+        docker-compose logs mongo
+        docker-compose logs redis
+        docker-compose logs nginx
+
+    - name: Cleanup
+      if: always()
+      run: docker-compose down -v
+
+  # Deploy to staging (on main branch)
+  deploy-staging:
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    needs: [integration]
+    runs-on: ubuntu-latest
+    environment: staging
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Deploy to staging
+      run: |
+        echo "Deploying to staging environment..."
+        # Add your deployment script here
+        # Example: kubectl apply -k k8s/staging/
+        # Or: docker service update --image ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest staging_app
+
+    - name: Run smoke tests
+      run: |
+        echo "Running smoke tests on staging..."
+        # Add smoke tests here
+        # curl -f https://staging.yourapp.com/health
+
+  # Deploy to production (manual approval required)
+  deploy-production:
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    needs: [deploy-staging]
+    runs-on: ubuntu-latest
+    environment: production
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Deploy to production
+      run: |
+        echo "Deploying to production environment..."
+        # Add your production deployment script here
+        # Example: kubectl apply -k k8s/production/
+        # Or: docker service update --image ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest prod_app
+
+    - name: Run smoke tests
+      run: |
+        echo "Running smoke tests on production..."
+        # Add smoke tests here
+        # curl -f https://yourapp.com/health
+
+    - name: Notify deployment success
+      run: |
+        echo "Production deployment completed successfully!"
+        # Add notification logic here (Slack, email, etc.)
+
+  # Performance testing (optional)
+  performance:
+    if: github.event_name == 'pull_request'
+    needs: [build]
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./nodejs-docker-project
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Setup Docker Compose
+      run: |
+        cp .env.example .env
+        docker-compose up -d
+
+    - name: Wait for services
+      run: timeout 180 bash -c 'until curl -f http://localhost/health; do sleep 5; done'
+
+    - name: Install k6
+      run: |
+        sudo gpg --no-default-keyring --keyring /usr/share/keyrings/k6-archive-keyring.gpg --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys C5AD17C747E3415A3642D57D77C6C491D6AC1D69
+        echo "deb [signed-by=/usr/share/keyrings/k6-archive-keyring.gpg] https://dl.k6.io/deb stable main" | sudo tee /etc/apt/sources.list.d/k6.list
+        sudo apt-get update
+        sudo apt-get install k6
+
+    - name: Run performance tests
+      run: |
+        k6 run --vus 10 --duration 30s - <<EOF
+        import http from 'k6/http';
+        import { check } from 'k6';
+        
+        export default function() {
+          let response = http.get('http://localhost/health');
+          check(response, {
+            'status is 200': (r) => r.status === 200,
+            'response time < 500ms': (r) => r.timings.duration < 500,
+          });
+        }
+        EOF
+
+    - name: Cleanup
+      if: always()
+      run: docker-compose down -v
