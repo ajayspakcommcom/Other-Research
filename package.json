@@ -1,0 +1,71 @@
+{
+  "name": "spak-communication-platform",
+  "version": "1.0.0",
+  "description": "Production-ready full-stack platform for Spak Communication Pvt Ltd",
+  "private": true,
+  "workspaces": [
+    "frontend",
+    "backend",
+    "mobile"
+  ],
+  "scripts": {
+    "install:all": "npm install && npm run install:frontend && npm run install:backend && npm run install:mobile",
+    "install:frontend": "cd frontend && npm install",
+    "install:backend": "cd backend && npm install", 
+    "install:mobile": "cd mobile && npm install",
+    "dev": "concurrently \"npm run dev:backend\" \"npm run dev:frontend\"",
+    "dev:frontend": "cd frontend && npm run dev",
+    "dev:backend": "cd backend && npm run start:dev",
+    "dev:mobile": "cd mobile && npm run start",
+    "build": "npm run build:backend && npm run build:frontend && npm run build:mobile",
+    "build:frontend": "cd frontend && npm run build",
+    "build:backend": "cd backend && npm run build",
+    "build:mobile": "cd mobile && npm run build:android",
+    "test": "npm run test:backend && npm run test:frontend",
+    "test:backend": "cd backend && npm run test",
+    "test:frontend": "cd frontend && npm run test",
+    "lint": "npm run lint:backend && npm run lint:frontend",
+    "lint:backend": "cd backend && npm run lint",
+    "lint:frontend": "cd frontend && npm run lint",
+    "docker:build": "docker-compose build",
+    "docker:up": "docker-compose up -d",
+    "docker:down": "docker-compose down",
+    "k8s:deploy": "kubectl apply -f infrastructure/kubernetes/",
+    "terraform:init": "cd infrastructure/terraform && terraform init",
+    "terraform:plan": "cd infrastructure/terraform && terraform plan",
+    "terraform:apply": "cd infrastructure/terraform && terraform apply"
+  },
+  "devDependencies": {
+    "concurrently": "^8.2.2",
+    "husky": "^8.0.3",
+    "lint-staged": "^15.2.0"
+  },
+  "husky": {
+    "hooks": {
+      "pre-commit": "lint-staged"
+    }
+  },
+  "lint-staged": {
+    "*.{js,jsx,ts,tsx}": [
+      "eslint --fix",
+      "prettier --write"
+    ]
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/ajayspakcommcom/Other-Research.git"
+  },
+  "keywords": [
+    "fullstack",
+    "nestjs",
+    "react",
+    "react-native",
+    "mongodb",
+    "kubernetes",
+    "terraform",
+    "aws",
+    "production"
+  ],
+  "author": "Spak Communication Pvt Ltd",
+  "license": "MIT"
+}
